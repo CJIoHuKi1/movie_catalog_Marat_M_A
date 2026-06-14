@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">🎥 Каталог фильмов</h1>
+
+<!-- Форма поиска и фильтрации -->
+<form method="GET" class="row g-3 mb-4">
+    <div class="col-md-6">
+        <input type="text" name="search" class="form-control" placeholder="🔍 Поиск по названию..." value="{{ search }}">
+    </div>
+    <div class="col-md-4">
+        <select name="genre" class="form-select">
+            <option value="все" {% if genre == 'все' %}selected{% endif %}>Все жанры</option>
+            {% for g in genres %}
+                <option value="{{ g }}" {% if genre == g %}selected{% endif %}>{{ g }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Найти</button>
+    </div>
+</form>
+
+<!-- Список фильмов -->
+{% if movies %}
+    <div class="row">
+        {% for movie in movies %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card movie-card h-100">
+                {% if movie.poster_url %}
+                    <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 300px; object-fit: cover;">
+                {% else %}
+                    <div class="poster-placeholder">
+                        <span class="text-muted">🎬 Нет постера</span>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ movie.title }}</h5>
+                    <p class="card-text text-muted">{{ movie.director }} • {{ movie.year }}</p>
+                    <p class="card-text">
+                        Жанр: <span class="badge bg-secondary">{{ movie.genre }}</span>
+                    </p>
+                    <p class="card-text">
+                        <strong>Оценка:</strong> {{ movie.rating }}/10
+                        <br>
+                        <!-- Дробные звёзды -->
+                        <span class="rating">
+                            {% set full_stars = (movie.rating / 2)|round(0, 'floor')|int %}
+                            {% set has_half = (movie.rating % 2) >= 1 %}
+                            {% for i in range(full_stars) %}⭐{% endfor %}
+                            {% if has_half %}½{% endif %}
+                            {% set empty_stars = 5 - full_stars - (1 if has_half else 0) %}
+                            {% for i in range(empty_stars) %}☆{% endfor %}
+                        </span>
+                        <small class="text-muted">({{ movie.rating }}/10)</small>
+                    </p>
+                    <a href="{{ url_for('detail', movie_id=movie.id) }}" class="btn btn-outline-primary btn-sm">Подробнее</a>
+                    <a href="{{ url_for('edit', movie_id=movie.id) }}" class="btn btn-outline-secondary btn-sm">✏️</a>
+                    <form action="{{ url_for('delete', movie_id=movie.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Удалить фильм?')">🗑️</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">Фильмов не найдено. <a href="{{ url_for('add') }}">Добавьте первый фильм!</a></div>
+{% endif %}
+{% endblock %}
