@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ movie.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" class="img-fluid rounded" alt="{{ movie.title }}">
+        {% else %}
+            <div class="poster-placeholder rounded" style="height: 400px;">
+                <span class="text-muted">🎬 Нет постера</span>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-8">
+        <h1>{{ movie.title }}</h1>
+        <p class="lead">{{ movie.director }} • {{ movie.year }}</p>
+        
+        <p><strong>Жанр:</strong> <span class="badge bg-secondary">{{ movie.genre }}</span></p>
+        
+        <p>
+            <strong>Оценка:</strong> {{ movie.rating }}/10
+            <br>
+            {% set full_stars = (movie.rating / 2)|round(0, 'floor')|int %}
+            {% set has_half = (movie.rating % 2) >= 1 %}
+            {% for i in range(full_stars) %}⭐{% endfor %}
+            {% if has_half %}½{% endif %}
+            {% set empty_stars = 5 - full_stars - (1 if has_half else 0) %}
+            {% for i in range(empty_stars) %}☆{% endfor %}
+        </p>
+        
+        {% if movie.description %}
+            <h5>Описание:</h5>
+            <p>{{ movie.description }}</p>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{{ url_for('edit', movie_id=movie.id) }}" class="btn btn-warning">✏️ Редактировать</a>
+            <form action="{{ url_for('delete', movie_id=movie.id) }}" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Удалить фильм?')">🗑️ Удалить</button>
+            </form>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">← Назад</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
